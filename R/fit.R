@@ -128,5 +128,7 @@ geefit <- function(formula, data, family = gaussian,
 
   out$corstr <- corstr
 
+  class(out) <- c("geecor", class(out))
+
   out
 }
