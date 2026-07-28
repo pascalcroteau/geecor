@@ -32,6 +32,8 @@ geefit <- function(formula, data, family = gaussian,
   blockCol <- rlang::enquo(block)
   indCol <- rlang::enquo(individual)
 
+  subExpr <- rlang::enquo(subset)
+
 
   if (rlang::quo_is_null(wavesCol)) {
     stop("'waves' must be provided.")
@@ -43,6 +45,12 @@ geefit <- function(formula, data, family = gaussian,
   cl <- cl[c(1L, m)]
 
   cl[[1]] <- quote(geepack::geeglm)
+
+
+  if (!rlang::quo_is_missing(subExpr)) {
+    keep <- eval(rlang::quo_get_expr(subExpr), data)
+    data <- data[keep, ]
+  }
 
 
   data <- dplyr::arrange(data, !!idCol, !!wavesCol)
@@ -110,19 +118,15 @@ geefit <- function(formula, data, family = gaussian,
 
 
 
-  eval(rlang::call_modify(cl, data = quote(data), waves = NULL,
-                          corstr = "userdefined", zcor = quote(zcor)),
-       envir = list(data = data,
-                    zcor = zcor),
-       enclos = parent.frame())
-  # eval(rlang::call_modify(cl, corstr = "userdefined", zcor = zcor))
+  out <- eval(rlang::call_modify(cl, data = quote(data), waves = NULL,
+                                 corstr = "userdefined", zcor = quote(zcor),
+                                 subset = rlang::zap()),
+              envir = list(data = data,
+                           zcor = zcor),
+              enclos = parent.frame())
 
 
+  out$corstr <- corstr
 
-  # builder <- list("toeplitz" = "build_toeplitz_zcor",
-  #                 "banded_toeplitz" = "build_banded_toeplitz_zcor",
-  #                 "m-dependent" = "build_mdep_common_zcor",
-  #                 "nested-exchangeable" = "build_nested_exch_zcor",
-  #                 "pairwise-grouped-exchangeable" = "build_pairwise_grouped_exch_zcor",
-  #                 "block-exchangeable" = "build_block_exch_li_zcor")
+  out
 }
