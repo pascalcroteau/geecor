@@ -6,7 +6,7 @@ print.geecor <- function(x, digits = NULL, quote = FALSE, prefix = "", ...)
     digits <- options()$digits
   else options(digits = digits)
   cat("\nCall:\n")
-  print(x$call)
+  print(x$callorig)
   cat("\nCoefficients:\n")
   print(unclass(x$coefficients), digits = digits)
   cat("\nDegrees of Freedom:", length(x$y), "Total (i.e. Null); ",

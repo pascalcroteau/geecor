@@ -20,6 +20,7 @@ geefit <- function(formula, data, family = gaussian,
                    ...)
 {
   cl <- match.call()
+  origcall <- cl
 
   corstr <- match.arg(corstr,
                       c(c("independence", "exchangeable", "ar1", "unstructured",
@@ -127,6 +128,7 @@ geefit <- function(formula, data, family = gaussian,
 
 
   out$corstr <- corstr
+  out$callorig <- origcall
 
   class(out) <- c("geecor", class(out))
 
