@@ -1,8 +1,8 @@
+# DOCUMENTS PROBLEMS WITH ANOVA (USE CAR::ANOVA), DROP1/ADD1/STEP
 
-
-builders <- c("toeplitz", "banded-toeplitz", "m-dependent",
-              "nested-exchangeable", "pairwise-grouped-exchangeable",
-              "block-exchangeable")
+builders <- c("toeplitz", "banded-toeplitz", "banded-unstructured",
+              "m-dependent", "nested-exchangeable",
+              "pairwise-grouped-exchangeable", "block-exchangeable")
 
 
 
@@ -24,7 +24,7 @@ geefit <- function(formula, data, family = gaussian,
 
   corstr <- match.arg(corstr,
                       c(c("independence", "exchangeable", "ar1", "unstructured",
-                          "userdefined"),
+                          "fixed", "userdefined"),
                         builders))
 
   idCol <- rlang::ensym(id)
@@ -34,6 +34,7 @@ geefit <- function(formula, data, family = gaussian,
   indCol <- rlang::enquo(individual)
 
   subExpr <- rlang::enquo(subset)
+  naExpr <- rlang::enquo(na.action)
 
 
   if (rlang::quo_is_null(wavesCol)) {
@@ -54,13 +55,19 @@ geefit <- function(formula, data, family = gaussian,
   }
 
 
+  if (!rlang::quo_is_missing(naExpr)) {
+    keep <- eval(rlang::quo_get_expr(subExpr), data)
+    data <- data[keep, ]
+  }
+
+
   data <- dplyr::arrange(data, !!idCol, !!wavesCol)
   # data <- dplyr::mutate(data,
   #                       .wave_std = dplyr::row_number())
 
 
   if (corstr %in% c("independence", "exchangeable", "ar1", "unstructured",
-                    "userdefined")) {
+                    "fixed", "userdefined")) {
 
     return(
       eval(
@@ -77,6 +84,10 @@ geefit <- function(formula, data, family = gaussian,
                  "toeplitz" = build_toeplitz_zcor(data[[rlang::as_name(idCol)]],
                                                   data[[rlang::as_name(wavesCol)]]),
                  "banded-toeplitz" = build_banded_toeplitz_zcor(
+                   data[[rlang::as_name(idCol)]],
+                   data[[rlang::as_name(wavesCol)]],
+                   bandwidth = bandwidth),
+                 "banded-unstructured" = build_banded_unstructured_zcor(
                    data[[rlang::as_name(idCol)]],
                    data[[rlang::as_name(wavesCol)]],
                    bandwidth = bandwidth),
@@ -127,8 +138,9 @@ geefit <- function(formula, data, family = gaussian,
               enclos = parent.frame())
 
 
-  out$corstr <- corstr
-  out$callorig <- origcall
+  out$.corstruct <- corstr
+  out$zcor <- zcor
+  out$call <- origcall
 
   class(out) <- c("geecor", class(out))
 

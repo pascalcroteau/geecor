@@ -64,6 +64,35 @@ build_banded_toeplitz_zcor <- function(id, waves, bandwidth, maxwave = NULL)
 
 
 
+build_banded_unstructured_zcor <- function(id, waves, bandwidth, maxwave = NULL) {
+  # id      : identifiant du cluster/sujet
+  # waves   : temps de mesure réel (pas l'ordre des lignes)
+  # bandwidth       : largeur de bande (lag maximal ayant une corrélation non nulle)
+  # maxwave : nb total de vagues possibles (déduit des données si non fourni)
+
+  clusz <- as.integer(table(factor(id, levels = unique(id))))
+  wvs <- as.integer(factor(waves))
+  # if (is.null(maxwave)) maxwave <- max(waves)
+  if (is.null(maxwave)) maxwave <- max(wvs)
+
+  stopifnot(bandwidth >= 1, bandwidth <= maxwave - 1)
+
+  # zcor.unstr <- genZcor(clusz = clusz, waves = waves, corstrv = 4)
+  zcor.unstr <- genZcor(clusz = clusz, waves = wvs, corstrv = 4)
+
+  pairs <- combn(maxwave, 2)
+  lags  <- abs(pairs[2, ] - pairs[1, ])
+
+  # on garde chaque paire de lag <= bandwidth comme sa PROPRE colonne (pas de regroupement)
+  cols <- which(lags <= bandwidth)
+  zcor.band.unstr <- zcor.unstr[, cols, drop = FALSE]
+
+  colnames(zcor.band.unstr) <- paste0("pair_", pairs[1, cols], "_", pairs[2, cols])
+  zcor.band.unstr
+}
+
+
+
 
 
 build_mdep_common_zcor <- function(id, waves, m, maxwave = NULL) {

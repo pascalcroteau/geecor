@@ -6,7 +6,7 @@ print.geecor <- function(x, digits = NULL, quote = FALSE, prefix = "", ...)
     digits <- options()$digits
   else options(digits = digits)
   cat("\nCall:\n")
-  print(x$callorig)
+  print(x$call)
   cat("\nCoefficients:\n")
   print(unclass(x$coefficients), digits = digits)
   cat("\nDegrees of Freedom:", length(x$y), "Total (i.e. Null); ",
@@ -17,7 +17,7 @@ print.geecor <- function(x, digits = NULL, quote = FALSE, prefix = "", ...)
     print(as.numeric(unclass(xg$gamma)), digits = digits)
   }
   else cat("\nScale is fixed.\n")
-  cat("\nCorrelation:  Structure =", x$corstr, " ")
+  cat("\nCorrelation:  Structure =", x$.corstruct, " ")
   if (pmatch(xg$model$corstr, "independence", 0) == 0) {
     cat("  Link =", xg$model$cor.link, "\n")
     cat("Estimated Correlation Parameters:\n")

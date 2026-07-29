@@ -2,7 +2,7 @@
 summary.geecor <- function(object, ...)
 {
   value <- geepack:::summary.geeglm(object)
-  value$corstr <- object$corstr
-  value$call <- object$callorig
+  value$corstr <- object$.corstruct
+  # value$call <- object$callorig
   value
 }
