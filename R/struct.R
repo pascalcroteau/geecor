@@ -5,7 +5,8 @@
 build_toeplitz_zcor <- function(id, waves, maxwave = NULL)
 {
   clusz <- as.integer(table(factor(id, levels = unique(id))))
-  wvs <- as.integer(factor(waves))
+  # wvs <- as.integer(factor(waves))
+  wvs <- waves
   # if (is.null(maxwave)) maxwave <- max(waves)
   if (is.null(maxwave)) maxwave <- max(wvs)
 
@@ -37,7 +38,8 @@ build_banded_toeplitz_zcor <- function(id, waves, bandwidth, maxwave = NULL)
   # maxwave : nb total de vagues possibles (déduit des données si non fourni)
 
   clusz <- as.integer(table(factor(id, levels = unique(id))))
-  wvs <- as.integer(factor(waves))
+  # wvs <- as.integer(factor(waves))
+  wvs <- waves
   # if (is.null(maxwave)) maxwave <- max(waves)
   if (is.null(maxwave)) maxwave <- max(wvs)
 
@@ -71,7 +73,8 @@ build_banded_unstructured_zcor <- function(id, waves, bandwidth, maxwave = NULL)
   # maxwave : nb total de vagues possibles (déduit des données si non fourni)
 
   clusz <- as.integer(table(factor(id, levels = unique(id))))
-  wvs <- as.integer(factor(waves))
+  # wvs <- as.integer(factor(waves))
+  wvs <- waves
   # if (is.null(maxwave)) maxwave <- max(waves)
   if (is.null(maxwave)) maxwave <- max(wvs)
 
@@ -102,7 +105,8 @@ build_mdep_common_zcor <- function(id, waves, m, maxwave = NULL) {
   # maxwave : nb total de vagues possibles (déduit des données si non fourni)
 
   clusz <- as.integer(table(factor(id, levels = unique(id))))
-  wvs <- as.integer(factor(waves))
+  # wvs <- as.integer(factor(waves))
+  wvs <- waves
   # if (is.null(maxwave)) maxwave <- max(waves)
   if (is.null(maxwave)) maxwave <- max(wvs)
 
@@ -136,7 +140,8 @@ build_nested_exch_zcor <- function(id, waves, subgroup, maxwave = NULL) {
   # maxwave  : nb total de vagues possibles (déduit de waves si non fourni)
 
   clusz <- as.integer(table(factor(id, levels = unique(id))))
-  wvs <- as.integer(factor(waves))
+  # wvs <- as.integer(factor(waves))
+  wvs <- waves
   # if (is.null(maxwave)) maxwave <- max(waves)
   if (is.null(maxwave)) maxwave <- max(wvs)
 
@@ -167,7 +172,8 @@ build_pairwise_grouped_exch_zcor <- function(id, waves, block, maxwave = NULL) {
   # maxwave : nb total de vagues possibles (déduit de waves si non fourni)
 
   clusz <- as.integer(table(factor(id, levels = unique(id))))
-  wvs <- as.integer(factor(waves))
+  # wvs <- as.integer(factor(waves))
+  wvs <- waves
   # if (is.null(maxwave)) maxwave <- max(waves)
   if (is.null(maxwave)) maxwave <- max(wvs)
 
@@ -254,3 +260,63 @@ build_block_exch_li_zcor <- function(id, period, individual) {
 
   do.call(rbind, zcor_list)
 }
+
+
+
+
+
+
+build_zcor <- function(corstr, id, waves, maxwave = NULL, bandwidth = NULL,
+                       m = NULL, subgroup = NULL, block = NULL,
+                       individual = NULL)
+{
+  switch(corstr,
+         "toeplitz" = build_toeplitz_zcor(id, waves),
+         "banded-toeplitz" = build_banded_toeplitz_zcor(id, waves,
+                                                        bandwidth = bandwidth),
+         "banded-unstructured" = build_banded_unstructured_zcor(
+           id, waves, bandwidth = bandwidth
+           ),
+         "m-dependent" = build_mdep_common_zcor(id, waves, m = m),
+         "nested-exchangeable" = build_nested_exch_zcor(id, waves,
+                                                        subgroup = subgroup),
+         "pairwise-grouped-exchangeable" = build_pairwise_grouped_exch_zcor(
+             id,
+             waves,
+             block = block),
+         "block-exchangeable" = build_block_exch_li_zcor(
+           id,
+           waves,
+           individual
+           )
+         )
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
