@@ -122,56 +122,6 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
                      individual = individual)
 
 
-  # zcor <- switch(corstr,
-  #                "toeplitz" = build_toeplitz_zcor(data[[rlang::as_name(idCol)]],
-  #                                                 data[[rlang::as_name(wavesCol)]]),
-  #                "banded-toeplitz" = build_banded_toeplitz_zcor(
-  #                  data[[rlang::as_name(idCol)]],
-  #                  data[[rlang::as_name(wavesCol)]],
-  #                  bandwidth = bandwidth),
-  #                "banded-unstructured" = build_banded_unstructured_zcor(
-  #                  data[[rlang::as_name(idCol)]],
-  #                  data[[rlang::as_name(wavesCol)]],
-  #                  bandwidth = bandwidth),
-  #                "m-dependent" = build_mdep_common_zcor(
-  #                  data[[rlang::as_name(idCol)]],
-  #                  data[[rlang::as_name(wavesCol)]],
-  #                  m = mdep),
-  #                "nested-exchangeable" = {
-  #                  if (rlang::quo_is_null(subgroupCol)) {
-  #                    stop("'subgroup' must be provided")
-  #                  }
-  #
-  #                  dsub <- dplyr::select(data, !!wavesCol, !!subgroupCol)
-  #                  dssub <- dplyr::arrange(dplyr::distinct(dsub), !!wavesCol)
-  #                  subg <- dplyr::pull(dssub, !!subgroupCol)
-  #
-  #                  build_nested_exch_zcor(
-  #                    data[[rlang::as_name(idCol)]],
-  #                    data[[rlang::as_name(wavesCol)]],
-  #                    subgroup = subg)
-  #                },
-  #                "pairwise-grouped-exchangeable" = {
-  #                  if (rlang::quo_is_null(blockCol)) {
-  #                    stop("'block' must be provided")
-  #                  }
-  #
-  #                  dbl <- dplyr::select(data, !!wavesCol, !!blockCol)
-  #                  dbbl <- dplyr::arrange(dplyr::distinct(dbl), !!wavesCol)
-  #                  bl <- dplyr::pull(dbbl, !!blockCol)
-  #
-  #                  build_pairwise_grouped_exch_zcor(
-  #                    data[[rlang::as_name(idCol)]],
-  #                    data[[rlang::as_name(wavesCol)]],
-  #                    block = bl)
-  #                },
-  #                "block-exchangeable" = build_block_exch_li_zcor(
-  #                  data[[rlang::as_name(idCol)]],
-  #                  data[[rlang::as_name(wavesCol)]],
-  #                  data[[rlang::as_name(indCol)]]))
-
-
-
   out <- eval(rlang::call_modify(cl, data = quote(data), waves = NULL,
                                  corstr = "userdefined", zcor = quote(zcor),
                                  subset = rlang::zap()),
