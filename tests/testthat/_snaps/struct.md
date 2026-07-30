@@ -6,8 +6,8 @@
     Output
       
       Call:
-      geepack::geeglm(formula = y ~ 1, family = gaussian, data = data, 
-          id = id, waves = NULL, zcor = zcor, corstr = "userdefined")
+      geefit(formula = y ~ 1, data = dat_band, id = id, waves = waves, 
+          family = gaussian, corstr = "banded-toeplitz", bandwidth = 2)
       
       Coefficients:
       (Intercept) 
@@ -29,13 +29,41 @@
 ---
 
     Code
+      geefit(y ~ 1, id = id, data = dat_bu, family = gaussian, corstr = "banded-unstructured",
+      waves = waves, bandwidth = k_bu)
+    Output
+      
+      Call:
+      geefit(formula = y ~ 1, data = dat_bu, id = id, waves = waves, 
+          family = gaussian, corstr = "banded-unstructured", bandwidth = k_bu)
+      
+      Coefficients:
+      (Intercept) 
+          0.00368 
+      
+      Degrees of Freedom: 8734 Total (i.e. Null);  8733 Residual
+      
+      Scale Link:                   identity
+      Estimated Scale Parameters:  [1] 0.99
+      
+      Correlation:  Structure = banded-unstructured    Link = identity 
+      Estimated Correlation Parameters:
+      pair_1_2 pair_1_3 pair_2_3 pair_2_4 pair_3_4 pair_3_5 pair_4_5 
+         0.517    0.318    0.431    0.252    0.373    0.201    0.344 
+      
+      Number of clusters:   2000   Maximum cluster size: 5 
+      
+
+---
+
+    Code
       geefit(y ~ 1, id = id, data = dat_mdep, family = gaussian, corstr = "m-dependent",
       mdep = 2, waves = waves)
     Output
       
       Call:
-      geepack::geeglm(formula = y ~ 1, family = gaussian, data = data, 
-          id = id, waves = NULL, zcor = zcor, corstr = "userdefined")
+      geefit(formula = y ~ 1, data = dat_mdep, id = id, waves = waves, 
+          family = gaussian, corstr = "m-dependent", mdep = 2)
       
       Coefficients:
       (Intercept) 
@@ -62,8 +90,9 @@
     Output
       
       Call:
-      geepack::geeglm(formula = resp ~ age + smoke + age:smoke, family = binomial, 
-          data = data, id = id, waves = NULL, zcor = zcor, corstr = "userdefined")
+      geefit(formula = resp ~ age + smoke + age:smoke, data = ohio, 
+          id = id, waves = age, family = binomial, corstr = "m-dependent", 
+          mdep = 1)
       
       Coefficients:
       (Intercept)         age       smoke   age:smoke 
@@ -90,8 +119,8 @@
     Output
       
       Call:
-      geepack::geeglm(formula = y ~ 1, family = gaussian, data = data, 
-          id = id, waves = NULL, zcor = zcor, corstr = "userdefined")
+      geefit(formula = y ~ 1, data = dat_nested, id = id, waves = waves, 
+          family = gaussian, corstr = "nested-exchangeable", subgroup = sub)
       
       Coefficients:
       (Intercept) 
@@ -118,8 +147,9 @@
     Output
       
       Call:
-      geepack::geeglm(formula = y ~ 1, family = gaussian, data = data, 
-          id = id, waves = NULL, zcor = zcor, corstr = "userdefined")
+      geefit(formula = y ~ 1, data = dat_pge, id = id, waves = waves, 
+          family = gaussian, corstr = "pairwise-grouped-exchangeable", 
+          block = blk)
       
       Coefficients:
       (Intercept) 
@@ -146,8 +176,8 @@
     Output
       
       Call:
-      geepack::geeglm(formula = y ~ 1, family = gaussian, data = data, 
-          id = id, waves = NULL, zcor = zcor, corstr = "userdefined")
+      geefit(formula = y ~ 1, data = dat_li, id = id, waves = period, 
+          family = gaussian, corstr = "block-exchangeable", individual = individual)
       
       Coefficients:
       (Intercept) 

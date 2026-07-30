@@ -174,8 +174,47 @@ test_that(
 
 
 
+
     # ---------------------------------------------------------------------
-    # m-depenent. The answer must be close to 0.4
+    # banded-toeplitz. The answer must be close to true_pairs_bu
+    # ---------------------------------------------------------------------
+    maxwave_bu <- 5
+    k_bu <- 2
+
+    # valeurs vraies, une par paire distincte de lag <= 2, dans l'ordre de combn()
+    # filtré sur lag <= k -- cet ordre doit correspondre à colnames(zcor) produit
+    # par build_banded_unstructured_zcor
+    true_pairs_bu <- list(
+      "1_2" = 0.50,  # lag 1
+      "1_3" = 0.30,  # lag 2
+      "2_3" = 0.45,  # lag 1
+      "2_4" = 0.25,  # lag 2
+      "3_4" = 0.40,  # lag 1
+      "3_5" = 0.20,  # lag 2
+      "4_5" = 0.35   # lag 1
+    )
+
+    Sigma_bu <- diag(maxwave_bu)
+    pairs_bu <- combn(maxwave_bu, 2)
+    lags_bu  <- abs(pairs_bu[2, ] - pairs_bu[1, ])
+    for (c in which(lags_bu <= k_bu)) {
+      i <- pairs_bu[1, c]; j <- pairs_bu[2, c]
+      val <- true_pairs_bu[[paste0(i, "_", j)]]
+      Sigma_bu[i, j] <- val
+      Sigma_bu[j, i] <- val
+    }
+
+    dat_bu <- simulate_from_sigma(n_clusters = 2000, Sigma = Sigma_bu)
+    expect_snapshot(
+      geefit(y ~ 1, id = id, data = dat_bu, family = gaussian,
+             corstr = "banded-unstructured", waves = waves, bandwidth = k_bu)
+    )
+
+
+
+
+    # ---------------------------------------------------------------------
+    # m-dependent. The answer must be close to 0.4
     # ---------------------------------------------------------------------
 
 
