@@ -164,6 +164,7 @@ build_block_exch_li_zcor <- function(id, period, individual) {
   #              cohorte (même sujet revu à chaque période), ou qui est
   #              distinct à chaque observation si le design est en coupe
   #              transversale pour cet individu
+  #              individual identifier, unique within a cluster, that persists across periods for individuals followed in a cohort (same subject revisited at each period), or that is distinct at each observation if the design is cross-sectional for that individual
 
   stopifnot(length(id) == length(period), length(id) == length(individual))
 
@@ -198,9 +199,72 @@ build_block_exch_li_zcor <- function(id, period, individual) {
 
 
 
-
-
-
+#' Build a `zcor` Matrix for Extended Working Correlation Structures
+#'
+#' `build_zcor()` builds the `zcor` matrix based on `corstr`, ready to be passed
+#' to [geepack::geeglm()] as
+#' `geeglm(..., corstr = "userdefined", zcor = build_zcor(...))`.
+#'
+#' @param corstr character string naming the working correlation
+#'   structure. One of `"independence"`, `"exchangeable"`, `"ar1"`,
+#'   `"unstructured"`, `r nice_collapse(builders)`. See **Details** for the
+#'   argument(s) required by each.
+#' @param id cluster identifier (the GEE unit, e.g., the cluster/site in a
+#'   cluster randomized trial)
+#' @param waves actual time/position of each observation (not the row order)
+#'   within each cluster. For `"block-exchangeable"`, can recur within the same
+#'   cluster, since several individuals share the same period (wave).
+#' @param maxwave total number of possible waves. Deduced from `max(waves)`
+#'   when `NULL`. Used by every structure except `"block_exchangeable"`.
+#' @param bandwidth truncation lag `k`: correlation is fixed at 0 beyond this
+#'   lag. Required when `corstr` is `"banded-toeplitz"` or
+#'   `"banded-unstructured"`; ignored otherwise.
+#' @param m integer; shared lag cutoff for the common m-dependent parameter.
+#'   Required when `corstr = "m-dependent"`; ignored otherwise.
+#' @param subgroup vector of length `maxwave` giving the subgroup of each
+#'   wave. Required when `corstr = "nested_exchangeable"`; ignored otherwise.
+#'
+#'     e.g., c("L","L","R","R") for 2 left-eye measurements, 2 right-eye
+#'     measurements for 4 waves; or the visit number if there are multiple
+#'     measurements per visit.
+#' @param block vector of length `maxwave` giving the group of each wave.
+#'   Required when `corstr = "pairwise_grouped_exchangeable"`; ignored
+#'   otherwise.
+#'
+#'     e.g.,: c(1,1,2,2,2,3) for 3 blocks and 6 waves.
+#' @param individual identifier of the individual within each cluster,
+#'   persisting across periods for individuals followed in a cohort design.
+#'   Required when `corstr = "block_exchangeable"`; ignored otherwise.
+#'
+#'
+#' @details
+#' `corstr` determines both the dispatch target and which of the remaining
+#' arguments are required:
+#'
+#' | `corstr`                          | requires                   |
+#' | :-------------------------------- | :------------------------- |
+#' | `"toeplitz"`                      | `id`, `waves`              |
+#' | `"banded-toeplitz"`               | `id`, `waves`, `bandwidth` |
+#' | `"banded-unstructured"`           | `id`, `waves`, `bandwidth` |
+#' | `"m-dependent"`                   | `id`, `waves`, `m`         |
+#' | `"nested-exchangeable"`           | `id`, `waves`, `subgroup`  |
+#' | `"pairwise-grouped-exchangeable"` | `id`, `waves`, `block`     |
+#' | `"block-exchangeable"`            | `id`, `waves`, `individual`|
+#'
+#' `data` must be sorted by `id` (contiguous per cluster) and, within each
+#' cluster, in the same row order used to build `waves` (and `individual`,
+#' when applicable) — see the package vignette for details on required
+#' sorting per structure.
+#'
+#' @return
+#' A numeric matrix suitable for the `zcor` argument of
+#' `geeglm(..., corstr = "userdefined")`: one row per observed pair within a
+#' cluster, one column per correlation parameter to estimate.
+#'
+#' @seealso [geepack::geeglm()], [geepack::genZcor()]
+#'
+#' @export
+#'
 build_zcor <- function(corstr, id, waves, maxwave = NULL, bandwidth = NULL,
                        m = NULL, subgroup = NULL, block = NULL,
                        individual = NULL)
@@ -209,10 +273,10 @@ build_zcor <- function(corstr, id, waves, maxwave = NULL, bandwidth = NULL,
   clusz <- as.integer(table(factor(id, levels = unique(id))))
   if (is.null(maxwave)) maxwave <- max(waves)
 
-  # matrice de design non structurée (gère nativement le déséquilibre)
+  # unstructured design matrix (natively handles imbalance)
   zcor.unstr <- genZcor(clusz = clusz, waves = waves, corstrv = 4)
 
-  # correspondance colonne <-> paire (s,t), s<t, dans l'ordre de combn()
+  # correspondence between column and pair (s, t), s < t, in the order of combn()
   pairs <- combn(maxwave, 2)
   lags  <- abs(pairs[2, ] - pairs[1, ])
 
