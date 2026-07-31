@@ -4,9 +4,9 @@ Title: What the Package Does (Title Case)
 Version: 0.0.1
 Authors@R: c(
     person(
-      "Jane", "Doe",
-      email = "jane@example.com"
-      role = c("aut", "cre")
+      "Pascal", "Croteau",
+      email = "croteaupascl@gmail.com",
+      role = c("aut", "cre", "cph")
     )
   )
 Description: More about what it does (maybe more than one line).
@@ -15,10 +15,13 @@ Depends:
     geepack
 Imports:
     dplyr,
+    glue,
+    lifecycle,
     rlang,
     tibble
 License: What license is it under?
 Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
 LazyData: true
 RoxygenNote: 7.3.3
 Suggests: 
