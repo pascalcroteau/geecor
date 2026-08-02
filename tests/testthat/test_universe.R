@@ -8,23 +8,6 @@ test_that(
     # ---------------------------------------------------------------------
 
 
-    six <- data.frame(
-      case  = rep(1:16, each = 4),
-      city  = rep(c("portage","kingston","kingston","portage","kingston","portage",
-                    "kingston","portage","portage","kingston","kingston","portage",
-                    "kingston","portage","kingston","portage"), each = 4),
-      age   = rep(c(9, 10, 11, 12), times = 16),
-      smoke = c(0,0,0,0, 1,2,2,2, 0,0,1,1, 0,0,0,1, 0,1,1,1, 0,1,1,1, 1,1,0,0,
-                1,1,1,2, 2,2,1,1, 0,0,0,1, 1,0,0,0, 1,0,0,0, 1,0,1,1, 1,2,1,2,
-                1,1,1,2, 1,1,2,1),
-      wheeze = c(1,1,1,0, 1,1,0,0, 1,0,0,0, 0,1,1,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
-                 0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,1,1, 0,0,0,0, 0,1,1,1, 0,0,0,1,
-                 0,0,0,1, 1,1,0,0)
-    )
-    six$city <- factor(six$city, levels = c("portage", "kingston"))
-
-
-
     fit_full <- geefit(wheeze ~ city + age + smoke, id = case, data = six,
                        waves = age, family = binomial, corstr = "m-dependent",
                        mdep = 3)
