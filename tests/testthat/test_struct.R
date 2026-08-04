@@ -53,12 +53,12 @@ test_that(
                        waves = age, family = binomial, corstr = "exchangeable")
 
     fitm <- geefit(wheeze ~ city + age + smoke, id = case, data = six,
-                   waves = age, family = binomial, corstr = "m-dependent",
-                   mdep = 3)
+                   waves = age, family = binomial, corstr = "banded-exchangeable",
+                   bandwidth = 3)
 
     fitm_smp <- geefit(wheeze ~ city + age + smoke, id = case,
                    data = six |> dplyr::slice_sample(prop = 1), waves = age,
-                   family = binomial, corstr = "m-dependent", mdep = 3)
+                   family = binomial, corstr = "banded-exchangeable", bandwidth = 3)
 
 
 
@@ -118,18 +118,18 @@ test_that(
 
 
     # ---------------------------------------------------------------------
-    # m-dependent. The answer must be close to 0.4
+    # banded-exchangeable The answer must be close to 0.4
     # ---------------------------------------------------------------------
 
-        expect_snapshot(
-      geefit(y ~ 1, id = id, data = dat_mdep, family = gaussian,
-             corstr = "m-dependent", mdep = 2, waves = waves)
+    expect_snapshot(
+      geefit(y ~ 1, id = id, data = dat_bdex, family = gaussian,
+             corstr = "banded-exchangeable", bandwidth = 2, waves = waves)
     )
 
 
 
     # ---------------------------------------------------------------------
-    # m-dependent, example from geeM.
+    # banded-exchangeable, example from geeM.
     # We verified that the answers are close to 4 digits before taking the
     # snapshot
     # ---------------------------------------------------------------------

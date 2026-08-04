@@ -68,6 +68,20 @@ simulate_from_sigma <- function(n_clusters, Sigma, mu = 0, prop_missing = 0.15, 
 
 
 
+add_missing <- function(dat, seed = 2)
+{
+  dat_na <- dat
+  set.seed(seed)
+  na_idx <- sample(seq_len(nrow(dat_na)),
+                   size = round(0.05 * nrow(dat_na)))
+  dat_na$y[na_idx] <- NA
+
+  dat_na
+}
+
+
+
+
 # ---------------------------------------------------------------------
 # banded-toeplitz.
 # ---------------------------------------------------------------------
@@ -81,7 +95,7 @@ for (i in 1:6) for (j in 1:6) {
 }
 
 dat_band <- simulate_from_sigma(n_clusters = 400, Sigma = Sigma_band)
-
+dat_band_na <- add_missing(dat_band)
 
 
 
@@ -117,22 +131,22 @@ for (c in which(lags_bu <= k_bu)) {
 }
 
 dat_bu <- simulate_from_sigma(n_clusters = 2000, Sigma = Sigma_bu)
-
+dat_bu_na <- add_missing(dat_bu)
 
 
 
 
 # ---------------------------------------------------------------------
-# m-dependent.
+# banded-exchangeable
 # ---------------------------------------------------------------------
 
 
-true_alpha_mdep <- 0.4
-Sigma_mdep <- diag(6)
-for (i in 1:6) for (j in 1:6) if (abs(i - j) %in% c(1, 2)) Sigma_mdep[i, j] <- 0.4
+true_alpha_bdex <- 0.4
+Sigma_bdex <- diag(6)
+for (i in 1:6) for (j in 1:6) if (abs(i - j) %in% c(1, 2)) Sigma_bdex[i, j] <- 0.4
 
-dat_mdep <- simulate_from_sigma(n_clusters = 400, Sigma = Sigma_mdep)
-
+dat_bdex <- simulate_from_sigma(n_clusters = 400, Sigma = Sigma_bdex)
+dat_bdex_na <- add_missing(dat_bdex)
 
 
 
@@ -152,7 +166,7 @@ dat_nested <- simulate_from_sigma(n_clusters = 400, Sigma = Sigma_nested)
 dat_nested <- dplyr::mutate(dat_nested,
                             sub = dplyr::if_else(waves <= 3, 1, 2))
 
-
+dat_nested_na <- add_missing(dat_nested)
 
 
 
@@ -181,7 +195,7 @@ dat_pge <- dplyr::mutate(dat_pge,
                                                 TRUE ~ 3))
 
 
-
+dat_pge_na <- add_missing(dat_pge)
 
 # ---------------------------------------------------------------------
 # block-exchangeable: The answer must be close to 0.3 0.15 0.25
@@ -217,5 +231,7 @@ simulate_block_exch_li <- function(n_clusters, n_indiv = 3, n_periods = 3, seed 
 
 dat_li <- simulate_block_exch_li(n_clusters = 300)
 
+
+dat_li_na <- add_missing(dat_li)
 
 

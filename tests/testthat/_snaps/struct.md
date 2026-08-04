@@ -57,13 +57,13 @@
 ---
 
     Code
-      geefit(y ~ 1, id = id, data = dat_mdep, family = gaussian, corstr = "m-dependent",
-      mdep = 2, waves = waves)
+      geefit(y ~ 1, id = id, data = dat_bdex, family = gaussian, corstr = "banded-exchangeable",
+      bandwidth = 2, waves = waves)
     Output
       
       Call:
-      geefit(formula = y ~ 1, data = dat_mdep, id = id, waves = waves, 
-          family = gaussian, corstr = "m-dependent", mdep = 2)
+      geefit(formula = y ~ 1, data = dat_bdex, id = id, waves = waves, 
+          family = gaussian, corstr = "banded-exchangeable", bandwidth = 2)
       
       Coefficients:
       (Intercept) 
@@ -74,7 +74,7 @@
       Scale Link:                   identity
       Estimated Scale Parameters:  [1] 1.079079
       
-      Correlation:  Structure = m-dependent    Link = identity 
+      Correlation:  Structure = banded-exchangeable    Link = identity 
       Estimated Correlation Parameters:
         alpha:1 
       0.4103338 
