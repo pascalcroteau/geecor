@@ -64,17 +64,18 @@ build_banded_unstructured_zcor <- function(zcor.unstr, maxwave, pairs, lags,
 
 
 
-build_mdep_common_zcor <- function(zcor.unstr, maxwave, pairs, lags, m) {
+build_banded_exchangeable_zcor <- function(zcor.unstr, maxwave, pairs, lags,
+                                           bandwidth) {
   # id      : identifiant du cluster/sujet
   # waves   : temps de mesure réel (pas l'ordre des lignes)
-  # m       : ordre de dépendance ; un seul paramètre commun pour les lags 1..m
+  # bandwidth       : ordre de dépendance ; un seul paramètre commun pour les lags 1..m
   # maxwave : nb total de vagues possibles (déduit des données si non fourni)
 
-  stopifnot(m >= 1, m <= maxwave - 1)
+  stopifnot(bandwidth >= 1, bandwidth <= maxwave - 1)
 
-  # toutes les paires avec lag <= m regroupées dans UNE seule colonne
-  # (un seul paramètre) ; lags > m -> exclues -> corrélation fixée à 0
-  cols <- which(lags <= m)
+  # toutes les paires avec lag <= bandwidth regroupées dans UNE seule colonne
+  # (un seul paramètre) ; lags > bandwidth -> exclues -> corrélation fixée à 0
+  cols <- which(lags <= bandwidth)
   zcor.mdep <- matrix(rowSums(zcor.unstr[, cols, drop = FALSE]), ncol = 1)
 
   zcor.mdep
@@ -199,6 +200,40 @@ build_block_exch_li_zcor <- function(id, period, individual) {
 
 
 
+
+
+build_unstructured_zcor <- function(id, waves, maxwave = NULL) {
+  if (is.null(maxwave)) maxwave <- max(waves)
+
+  id_f <- factor(id, levels = unique(id))
+  clusters <- split(waves, id_f)
+
+  pairs <- combn(maxwave, 2)
+  ncol_z <- ncol(pairs)
+  pair_index <- function(v1, v2) which(pairs[1, ] == v1 & pairs[2, ] == v2)
+
+  rows <- list()
+  for (w in clusters) {
+    n <- length(w)
+    if (n < 2) next
+    for (i in 1:(n - 1)) for (j in (i + 1):n) {
+      v1 <- min(w[i], w[j]); v2 <- max(w[i], w[j])
+      col <- pair_index(v1, v2)
+      row <- numeric(ncol_z)
+      row[col] <- 1
+      rows[[length(rows) + 1]] <- row
+    }
+  }
+  zcor <- do.call(rbind, rows)
+  colnames(zcor) <- paste0("alpha.", pairs[1, ], ":", pairs[2, ])
+  zcor
+}
+
+
+
+
+
+
 #' Build a `zcor` Matrix for Extended Working Correlation Structures
 #'
 #' `build_zcor()` builds the `zcor` matrix based on `corstr`, ready to be passed
@@ -217,10 +252,11 @@ build_block_exch_li_zcor <- function(id, period, individual) {
 #' @param maxwave total number of possible waves. Deduced from `max(waves)`
 #'   when `NULL`. Used by every structure except `"block_exchangeable"`.
 #' @param bandwidth truncation lag `k`: correlation is fixed at 0 beyond this
-#'   lag. Required when `corstr` is `"banded-toeplitz"` or
-#'   `"banded-unstructured"`; ignored otherwise.
-#' @param m integer; shared lag cutoff for the common m-dependent parameter.
-#'   Required when `corstr = "m-dependent"`; ignored otherwise.
+#'   lag. Required when `corstr` is `"banded-toeplitz"`, `"banded-exchangeable"`
+#'   or `"banded-unstructured"`; ignored otherwise.
+#' @param m integer; for `"m-dependent"`, same as `"bandwidth"` in
+#'   `"banded-toeplitz"`. Required when `corstr = "m-dependent"`; ignored
+#'   otherwise.
 #' @param subgroup vector of length `maxwave` giving the subgroup of each
 #'   wave. Required when `corstr = "nested_exchangeable"`; ignored otherwise.
 #'
@@ -246,6 +282,7 @@ build_block_exch_li_zcor <- function(id, period, individual) {
 #' | `"toeplitz"`                      | `id`, `waves`              |
 #' | `"banded-toeplitz"`               | `id`, `waves`, `bandwidth` |
 #' | `"banded-unstructured"`           | `id`, `waves`, `bandwidth` |
+#' | `"banded-exchangeable"`           | `id`, `waves`, `bandwidth` |
 #' | `"m-dependent"`                   | `id`, `waves`, `m`         |
 #' | `"nested-exchangeable"`           | `id`, `waves`, `subgroup`  |
 #' | `"pairwise-grouped-exchangeable"` | `id`, `waves`, `block`     |
@@ -269,12 +306,10 @@ build_zcor <- function(corstr, id, waves, maxwave = NULL, bandwidth = NULL,
                        m = NULL, subgroup = NULL, block = NULL,
                        individual = NULL)
 {
-
-  clusz <- as.integer(table(factor(id, levels = unique(id))))
   if (is.null(maxwave)) maxwave <- max(waves)
 
   # unstructured design matrix (natively handles imbalance)
-  zcor.unstr <- genZcor(clusz = clusz, waves = waves, corstrv = 4)
+  zcor.unstr <- build_unstructured_zcor(id, waves, maxwave)
 
   # correspondence between column and pair (s, t), s < t, in the order of combn()
   pairs <- combn(maxwave, 2)
@@ -284,14 +319,17 @@ build_zcor <- function(corstr, id, waves, maxwave = NULL, bandwidth = NULL,
 
   switch(corstr,
          "toeplitz" = build_toeplitz_zcor(zcor.unstr, maxwave, pairs, lags),
+         "m-dependent" = build_banded_toeplitz_zcor(zcor.unstr, maxwave,
+                                                    pairs, lags,
+                                                    bandwidth = m),
          "banded-toeplitz" = build_banded_toeplitz_zcor(zcor.unstr, maxwave,
                                                         pairs, lags,
                                                         bandwidth = bandwidth),
          "banded-unstructured" = build_banded_unstructured_zcor(
            zcor.unstr, maxwave, pairs, lags, bandwidth = bandwidth
            ),
-         "m-dependent" = build_mdep_common_zcor(zcor.unstr, maxwave, pairs,
-                                                lags, m = m),
+         "banded-exchangeable" = build_banded_exchangeable_zcor(
+           zcor.unstr, maxwave, pairs, lags, bandwidth = bandwidth),
          "nested-exchangeable" = build_nested_exch_zcor(zcor.unstr, maxwave,
                                                         pairs, lags,
                                                         subgroup = subgroup),
@@ -301,7 +339,8 @@ build_zcor <- function(corstr, id, waves, maxwave = NULL, bandwidth = NULL,
            id,
            waves,
            individual
-           )
+           ),
+         "unrecognized correlation structure"
          )
 }
 

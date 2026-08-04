@@ -1,7 +1,7 @@
 # DOCUMENTS PROBLEMS WITH ANOVA (USE CAR::ANOVA), DROP1/ADD1/STEP
 
 builders <- c("toeplitz", "banded-toeplitz", "banded-unstructured",
-              "m-dependent", "nested-exchangeable",
+              "banded-exchangeable", "m-dependent", "nested-exchangeable",
               "pairwise-grouped-exchangeable", "block-exchangeable")
 other_structs <- "ar-m"
 
@@ -72,26 +72,27 @@ other_structs <- "ar-m"
 #'   truncation). Equivalent to `TYPE=TOEP` in SAS. Dispatches to
 #'   `build_toeplitz_zcor()`.
 #'
-#' - **`"banded_toeplitz"`** — Toeplitz structure truncated at a maximum
+#' - **`"banded-toeplitz"`** — Toeplitz structure truncated at a maximum
 #'   lag `k`: one parameter per lag from 1 to `k`, and correlation fixed
 #'   at 0 beyond `k`. Equivalent to `corstr = "stat_M_dep"` (with `Mv =
-#'   k`) in **gee**, and `TYPE=TOEP(k+1)` in SAS. Also referred to as
-#'   "stationary M-dependent" in the literature. Dispatches to
+#'   k`) in **gee**, and `TYPE=TOEP(k+1)` or MDEP(k+1)` in SAS. Also referred to
+#'   as "stationary M-dependent" in the literature. Dispatches to
 #'   `build_banded_toeplitz_zcor()`.
 #'
-#' - **`"banded_unstructured"`** — Same truncation as
+#' - **`"banded-unstructured"`** — Same truncation as
 #'   `"banded_toeplitz"` (0 beyond lag `k`), but without pooling
 #'   observations within a band: every pair with lag `<= k` keeps its own
 #'   separate parameter. Equivalent to `corstr = "non_stat_M_dep"` (with
 #'   `Mv = k`) in **gee**. Also referred to as "nonstationary M-dependent"
 #'   in the literature. Dispatches to `build_banded_unstructured_zcor()`.
 #'
-#' - **`"mdep_common"`** — Classical textbook definition of m-dependence:
-#'   a single shared correlation parameter for every pair with lag `<=
-#'   m`, and 0 beyond. Distinct from both `"banded_toeplitz"` and
-#'   `"banded_unstructured"` above; no directly equivalent named option
-#'   is known in SAS or the **gee** package. Dispatches to
-#'   `build_mdep_common_zcor()`.
+#' - **`"m-dependent"`** — alias for **`"banded-toeplitz"`**.
+#'
+#' - **`"banded-exchangeable"`** — A single shared correlation parameter for
+#'   every pair with lag `<= m`, and 0 beyond. Distinct from both
+#'   `"banded-toeplitz"` and `"banded_unstructured"` above; no directly
+#'   equivalent named option is known in SAS or the **gee** package. Dispatches
+#'   to `build_mdep_common_zcor()`.
 #'
 #' - **`"nested_exchangeable"`** — Observations are partitioned into
 #'   subgroups (e.g., left/right eye, or visit-level clustering of
@@ -333,15 +334,8 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
 
   if (anyNA(data)) data <- na.action(data)
 
-  # if (!rlang::quo_is_missing(naExpr)) {
-  #   keep <- eval(rlang::quo_get_expr(naExpr), data)
-  #   data <- data[keep, ]
-  # }
-
 
   data <- dplyr::arrange(data, !!idCol, !!wavesCol)
-  # data <- dplyr::mutate(data,
-  #                       .wave_std = dplyr::row_number())
 
 
   if (corstr %in% c("independence", "exchangeable", "ar1", "unstructured",
@@ -363,9 +357,6 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
 
 
   if (corstr == "nested-exchangeable") {
-    # if (rlang::quo_is_null(subgroupCol)) {
-    #   stop("'subgroup' must be provided")
-    # }
 
     dsub <- dplyr::select(data, !!wavesCol, !!subgroupCol)
     dssub <- dplyr::arrange(dplyr::distinct(dsub), !!wavesCol)
@@ -373,19 +364,11 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
 
   } else if (corstr == "pairwise-grouped-exchangeable") {
 
-    # if (rlang::quo_is_null(blockCol)) {
-    #   stop("'block' must be provided")
-    # }
-
     dbl <- dplyr::select(data, !!wavesCol, !!blockCol)
     dbbl <- dplyr::arrange(dplyr::distinct(dbl), !!wavesCol)
     block <- dplyr::pull(dbbl, !!blockCol)
 
   } else if (corstr == "block-exchangeable") {
-
-    # if (rlang::quo_is_null(indCol)) {
-    #   stop("'individual' must be provided")
-    # }
 
     individual <- data[[ind_name]]
   }
@@ -395,7 +378,6 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
   zcor <- build_zcor(corstr,
                      id = data[[id_name]],
                      waves = waves_v,
-                     # waves = data[[rlang::as_name(wavesCol)]],
                      bandwidth = bandwidth, m = mdep,
                      subgroup = subgroup, block = block,
                      individual = individual)
@@ -411,7 +393,6 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
 
   out$.corstruct <- corstr
   out$call <- origcall
-  # out$waves <- data[[rlang::as_name(wavesCol)]]
   out$waves <- waves_v
   out$.corparams <- list(bandwidth = bandwidth, mdep = mdep,
                          subgroup = subgroup, block = block,
