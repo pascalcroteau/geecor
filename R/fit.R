@@ -406,7 +406,6 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
 
   waves_v <- as.integer(factor(data[[waves_name]]))
 
-
   if (corstr == "ar-m") {
 
     out <- eval(cl, envir = list(data = data), enclos = parent.frame())
