@@ -6,15 +6,6 @@ builders <- c("toeplitz", "banded-toeplitz", "banded-unstructured",
 other_structs <- "ar-m"
 
 
-
-# subgroup: a column in data. it should correspond, for each wave, to the
-#           subgroup it belongs to
-# block: a column in data. it should correspond, for each wave, to the
-#  block it belongs to (e.g.: c(1,1,2,2,2,3) for 3 blocks)
-
-
-# @section Missing values:
-# asdf
 #
 # @section Usage differences with [geepack::geeglm()]:
 # waves mandatory|  auto sort
@@ -28,8 +19,12 @@ other_structs <- "ar-m"
 #' by **geepack**.
 #'
 #' @details
-#' The data is automatically sorted by `id` (contiguous per cluster) and, within
+#' In addition to supporting more correlation structures, the data is
+#' automatically sorted by `id` (contiguous per cluster) and, within
 #' each cluster, by `waves` in increasing order.
+#'
+#' Filtering of the missing values, as well as other subsetting via `subset`,
+#' is also performed by `geefit()`. See section **`"Missing Values"`**.
 #'
 #' Based on the `corstr` argument, `geefit()` dispatches to the appropriate
 #' internal `build_*_zcor()` helper to construct the `zcor` matrix passed to
@@ -69,48 +64,45 @@ other_structs <- "ar-m"
 #'
 #' - **`"toeplitz"`** — Correlation depends only on the lag between two
 #'   observations, with one freely estimated parameter per lag (no
-#'   truncation). Equivalent to `TYPE=TOEP` in SAS. Dispatches to
-#'   `build_toeplitz_zcor()`.
+#'   truncation). Equivalent to `TYPE=TOEP` in SAS.
 #'
 #' - **`"banded-toeplitz"`** — Toeplitz structure truncated at a maximum
 #'   lag `k`: one parameter per lag from 1 to `k`, and correlation fixed
 #'   at 0 beyond `k`. Equivalent to `corstr = "stat_M_dep"` (with `Mv =
 #'   k`) in **gee**, and `TYPE=TOEP(k+1)` or MDEP(k+1)` in SAS. Also referred to
-#'   as "stationary M-dependent" in the literature. Dispatches to
-#'   `build_banded_toeplitz_zcor()`.
+#'   as "stationary M-dependent" in the literature.
+#'
+#' - **`"banded-exchangeable"`** — A single shared correlation parameter for
+#'   every pair with lag `<= m`, and 0 beyond. Distinct from both
+#'   `"banded-toeplitz"` and `"banded_unstructured"` above; no directly
+#'   equivalent named option is known in SAS or the **gee** package.
 #'
 #' - **`"banded-unstructured"`** — Same truncation as
 #'   `"banded_toeplitz"` (0 beyond lag `k`), but without pooling
 #'   observations within a band: every pair with lag `<= k` keeps its own
 #'   separate parameter. Equivalent to `corstr = "non_stat_M_dep"` (with
 #'   `Mv = k`) in **gee**. Also referred to as "nonstationary M-dependent"
-#'   in the literature. Dispatches to `build_banded_unstructured_zcor()`.
+#'   in the literature.
 #'
 #' - **`"m-dependent"`** — alias for **`"banded-toeplitz"`**.
 #'
-#' - **`"banded-exchangeable"`** — A single shared correlation parameter for
-#'   every pair with lag `<= m`, and 0 beyond. Distinct from both
-#'   `"banded-toeplitz"` and `"banded_unstructured"` above; no directly
-#'   equivalent named option is known in SAS or the **gee** package. Dispatches
-#'   to `build_mdep_common_zcor()`.
-#'
-#' - **`"nested_exchangeable"`** — Observations are partitioned into
+#' - **`"nested-exchangeable"`** — Observations are partitioned into
 #'   subgroups (e.g., left/right eye, or visit-level clustering of
 #'   repeated measurements). Two parameters: one shared correlation for
 #'   pairs within the same subgroup, one shared correlation for pairs
 #'   across different subgroups. This is the cross-sectional (non-cohort)
 #'   case described by Li, Turner, and Preisser (2018) for cluster
-#'   randomized trials. Dispatches to `build_nested_exch_zcor()`.
+#'   randomized trials.
 #'
-#' - **`"pairwise_grouped_exchangeable"`** — Generalization of
+#' - **`"pairwise-grouped-exchangeable"`** — Generalization of
 #'   `"nested_exchangeable"` to more than two groups, with a dedicated
 #'   correlation parameter for each group (intra-group) and a dedicated
 #'   parameter for each distinct pair of groups (inter-group). For `k`
 #'   groups this yields `k(k+1)/2` parameters. Not a structure with a
 #'   standard name in the literature; this naming is specific to this
-#'   package. Dispatches to `build_pairwise_grouped_exch_zcor()`.
+#'   package.
 #'
-#' - **`"block_exchangeable"`** — Three-parameter structure for cohort
+#' - **`"block-exchangeable"`** — Three-parameter structure for cohort
 #'   designs (the same individual followed across multiple periods
 #'   within a cluster): `alpha1` for pairs in the same period (different
 #'   individuals), `alpha2` for pairs in different periods (different
@@ -118,15 +110,15 @@ other_structs <- "ar-m"
 #'   different periods. As defined by Li, Turner, and Preisser (2018);
 #'   requires an additional `individual` identifier beyond `id` and
 #'   `waves`. Reduces to `"nested_exchangeable"` when no individual is
-#'   followed across periods. Dispatches to `build_block_exch_li_zcor()`.
+#'   followed across periods.
 #'
 #' ## Structures requiring iterative fitting
 #'
-#' Unlike every structure above, `"ar_m"` cannot be expressed as a fixed
+#' Unlike every structure above, `"ar-m"` cannot be expressed as a fixed
 #' linear combination of indicator columns, and is therefore not a simple
 #' `zcor` build:
 #'
-#' - **`"ar_m"`** — Autoregressive structure of order `Mv > 1`. Unlike the
+#' - **`"ar-m"`** — Autoregressive structure of order `Mv > 1`. Unlike the
 #'   banded structures above, correlation does not vanish beyond lag
 #'   `Mv`; it continues to decay according to the autoregressive
 #'   recursion (Yule-Walker equations) implied by the `Mv` autoregressive
@@ -135,6 +127,11 @@ other_structs <- "ar-m"
 #'   the underlying parameters, it is instead fit via `geeglm_arm()`, an
 #'   iterative procedure alternating between banded-Toeplitz estimation
 #'   and a Yule-Walker update.
+#'
+#'
+#' # Missing Values
+#'
+#' **Very first step**
 #'
 #'
 #' @param formula a two-sided formula, as in [geepack::geeglm()].
@@ -173,31 +170,32 @@ other_structs <- "ar-m"
 #' @param contrasts See corresponding documentation to glm
 #' @param std.err See corresponding documentation to geeglm
 #'
-#' @param bandwidth for when `corstr` is either `"banded-toeplitz"` or
-#'   `"banded-unstructured"`. An integer corresponding to the maximum lag with
-#'   a non-null correlation.
-#' @param mdep for when `corstr` is `"m-dependent"`. An integer specifying the
-#'   order of dependency.
-#' @param subgroup for when `corstr` is `"nested-exchangeable"`. Column in
-#' `data`; variable giving the subgroup of each observation within its cluster.
+#' @param bandwidth truncation lag `k`: correlation is fixed at 0 beyond this
+#'   lag. Required when `corstr` is `"banded-toeplitz"`, `"banded-exchangeable"`
+#'   or `"banded-unstructured"`.
+#' @param mdep integer; same as `"bandwidth"` in `"banded-toeplitz"`. Required
+#'   when `corstr = "m-dependent"`.
+#' @param subgroup Column in `data`; variable giving the subgroup of each
+#'   observation within its cluster. Required when `corstr` is
+#'   `"nested-exchangeable"`.
 #'
 #' `r lifecycle::badge("experimental")`
 #'
 #'     Can also be a vector, the same length as the number of rows of `data`,
 #'     prior to removing missing values or subsetting. Must corresponds to the
 #'     order of `data`.
-#' @param block for when `corstr` is `"pairwise-grouped-exchangeable"`. Column
-#' in `data`; variable giving the block id of each observation within its
-#' cluster.
+#' @param block Column in `data`; variable giving the block id of each
+#'    observation within its cluster. Required when `corstr` is
+#'    `"pairwise-grouped-exchangeable"`.
 #'
 #' `r lifecycle::badge("experimental")`
 #'
 #'     Can also be a vector, the same length as the number of rows of `data`,
 #'     prior to removing missing values or subsetting. Must corresponds to the
 #'     order of `data`.
-#' @param individual for when `corstr` is `"group-exchangeable"`. Column in
-#' `data`; variable giving the individual id of each observation within its
-#' cluster.
+#' @param individual Column in `data`; variable giving the individual id of
+#'    each observation within its cluster. Required when `corstr` is
+#'    `"group-exchangeable"`.
 #'
 #'     This is not the same as the cluster ID provided with
 #'     `id`, but the individual identifier, unique within a cluster, that
@@ -226,7 +224,7 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
                    weights, subset, na.action, start = NULL, etastart, mustart,
                    offset, control = geese.control(...), method = "glm.fit",
                    contrasts = NULL, std.err = "san.se",
-                   bandwidth = NULL, mdep = NULL,
+                   bandwidth = NULL, Mv = NULL, mdep = NULL,
                    subgroup = NULL, block = NULL, individual = NULL,
                    ...)
 {
@@ -236,7 +234,7 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
   corstr <- match.arg(corstr,
                       c(c("independence", "exchangeable", "ar1", "unstructured",
                           "fixed", "userdefined"),
-                        builders))
+                        c(builders, other_structs)))
 
   idCol <- rlang::ensym(id)
   wavesCol <- rlang::enquo(waves)
@@ -253,11 +251,27 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
   }
 
 
-  geeargs <- setdiff(names(formals(geepack::geeglm)), "...")
-  m <- match(geeargs, names(cl), 0L)
-  cl <- cl[c(1L, m)]
+  if (corstr == "ar-m") {
 
-  cl[[1]] <- quote(geepack::geeglm)
+    a <- match(c("formula", "data", "id", "waves", "family", "Mv"),
+               names(cl), 0L)
+
+    cl <- cl[c(1L, a)]
+    cl[[1]] <- quote(geeglm_arm)
+
+    cl <- rlang::call_modify(cl, data = quote(data))
+
+
+  } else {
+
+    geeargs <- setdiff(names(formals(geepack::geeglm)), "...")
+    m <- match(geeargs, names(cl), 0L)
+    cl <- cl[c(1L, m)]
+
+    cl[[1]] <- quote(geepack::geeglm)
+
+  }
+
 
   dat_nms <- colnames(data)
 
@@ -332,7 +346,24 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
     }
   }
 
-  if (anyNA(data)) data <- na.action(data)
+  if (anyNA(data)) {
+    added_vars <- tidyselect::eval_select(
+      rlang::expr(c(!!idCol, !!wavesCol, !!subgroupCol, !!blockCol, !!indCol)),
+      data,
+      strict = FALSE
+    )
+    vars <- union(all.vars(formula), names(added_vars))
+    data <- dplyr::select(data, tidyselect::all_of(vars))
+    data <- naa(data)
+
+#     upd_fm <- reformulate(c(".", encodeString(names(added_vars), quote = "`")),
+#                           quote(.))
+#     mf_formula <- update.formula(formula, upd_fm)
+# print(naa)
+#     print(rlang::new_formula(NULL, rlang::expr(. + !!idCol + !!wavesCol)))
+#     print(update.formula(formula, . ~ . + rlang::quo_get_expr(idCol))   )
+#     data <- na.action(data)
+  }
 
 
   data <- dplyr::arrange(data, !!idCol, !!wavesCol)
@@ -375,20 +406,32 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
 
   waves_v <- as.integer(factor(data[[waves_name]]))
 
-  zcor <- build_zcor(corstr,
-                     id = data[[id_name]],
-                     waves = waves_v,
-                     bandwidth = bandwidth, m = mdep,
-                     subgroup = subgroup, block = block,
-                     individual = individual)
+
+  if (corstr == "ar-m") {
+
+    out <- eval(cl, envir = list(data = data), enclos = parent.frame())
+
+  } else {
+
+    zcor <- build_zcor(corstr,
+                       id = data[[id_name]],
+                       waves = waves_v,
+                       bandwidth = bandwidth, m = mdep,
+                       subgroup = subgroup, block = block,
+                       individual = individual)
 
 
-  out <- eval(rlang::call_modify(cl, data = quote(data), waves = NULL,
-                                 corstr = "userdefined", zcor = quote(zcor),
-                                 subset = rlang::zap()),
-              envir = list(data = data,
-                           zcor = zcor),
-              enclos = parent.frame())
+    out <- eval(rlang::call_modify(cl, data = quote(data), waves = NULL,
+                                   corstr = "userdefined", zcor = quote(zcor),
+                                   subset = rlang::zap()),
+                envir = list(data = data,
+                             zcor = zcor),
+                enclos = parent.frame())
+
+  }
+
+
+
 
 
   out$.corstruct <- corstr
