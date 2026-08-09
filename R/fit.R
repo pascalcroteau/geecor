@@ -459,7 +459,7 @@ geecor_fit <- function(x, y, id, waves, family = gaussian,
   corstr <- match.arg(corstr,
                       c(c("independence", "exchangeable", "ar1", "unstructured",
                           "fixed", "userdefined"),
-                        builders))
+                        builders, other_structs))
 
 
   N <- NROW(y)

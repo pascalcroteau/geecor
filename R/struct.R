@@ -254,9 +254,8 @@ build_unstructured_zcor <- function(id, waves, maxwave = NULL) {
 #' @param bandwidth truncation lag `k`: correlation is fixed at 0 beyond this
 #'   lag. Required when `corstr` is `"banded-toeplitz"`, `"banded-exchangeable"`
 #'   or `"banded-unstructured"`; ignored otherwise.
-#' @param m integer; for `"m-dependent"`, same as `"bandwidth"` in
-#'   `"banded-toeplitz"`. Required when `corstr = "m-dependent"`; ignored
-#'   otherwise.
+#' @param m integer; same as `"bandwidth"` in `"banded-toeplitz"`. Required
+#'   when `corstr = "m-dependent"`; ignored otherwise.
 #' @param subgroup vector of length `maxwave` giving the subgroup of each
 #'   wave. Required when `corstr = "nested_exchangeable"`; ignored otherwise.
 #'
