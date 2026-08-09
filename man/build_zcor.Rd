@@ -19,7 +19,7 @@ build_zcor(
 \arguments{
 \item{corstr}{character string naming the working correlation
 structure. One of \code{"independence"}, \code{"exchangeable"}, \code{"ar1"},
-\code{"unstructured"}, "\code{toeplitz}", "\code{banded-toeplitz}", "\code{banded-unstructured}", "\code{m-dependent}", "\code{nested-exchangeable}", "\code{pairwise-grouped-exchangeable}" or "\code{block-exchangeable}". See \strong{Details} for the
+\code{"unstructured"}, "\code{toeplitz}", "\code{banded-toeplitz}", "\code{banded-unstructured}", "\code{banded-exchangeable}", "\code{m-dependent}", "\code{nested-exchangeable}", "\code{pairwise-grouped-exchangeable}" or "\code{block-exchangeable}". See \strong{Details} for the
 argument(s) required by each.}
 
 \item{id}{cluster identifier (the GEE unit, e.g., the cluster/site in a
@@ -33,11 +33,11 @@ cluster, since several individuals share the same period (wave).}
 when \code{NULL}. Used by every structure except \code{"block_exchangeable"}.}
 
 \item{bandwidth}{truncation lag \code{k}: correlation is fixed at 0 beyond this
-lag. Required when \code{corstr} is \code{"banded-toeplitz"} or
-\code{"banded-unstructured"}; ignored otherwise.}
+lag. Required when \code{corstr} is \code{"banded-toeplitz"}, \code{"banded-exchangeable"}
+or \code{"banded-unstructured"}; ignored otherwise.}
 
-\item{m}{integer; shared lag cutoff for the common m-dependent parameter.
-Required when \code{corstr = "m-dependent"}; ignored otherwise.}
+\item{m}{integer; same as \code{"bandwidth"} in \code{"banded-toeplitz"}. Required
+when \code{corstr = "m-dependent"}; ignored otherwise.}
 
 \item{subgroup}{vector of length \code{maxwave} giving the subgroup of each
 wave. Required when \code{corstr = "nested_exchangeable"}; ignored otherwise.
@@ -75,6 +75,7 @@ arguments are required:\tabular{ll}{
    \code{"toeplitz"} \tab \code{id}, \code{waves} \cr
    \code{"banded-toeplitz"} \tab \code{id}, \code{waves}, \code{bandwidth} \cr
    \code{"banded-unstructured"} \tab \code{id}, \code{waves}, \code{bandwidth} \cr
+   \code{"banded-exchangeable"} \tab \code{id}, \code{waves}, \code{bandwidth} \cr
    \code{"m-dependent"} \tab \code{id}, \code{waves}, \code{m} \cr
    \code{"nested-exchangeable"} \tab \code{id}, \code{waves}, \code{subgroup} \cr
    \code{"pairwise-grouped-exchangeable"} \tab \code{id}, \code{waves}, \code{block} \cr
