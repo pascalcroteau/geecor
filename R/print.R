@@ -17,7 +17,7 @@ print.geecor <- function(x, digits = NULL, quote = FALSE, prefix = "", ...)
     print(as.numeric(unclass(xg$gamma)), digits = digits)
   }
   else cat("\nScale is fixed.\n")
-  cat("\nCorrelation:  Structure =", x$.corstruct, " ")
+  cat("\nCorrelation:  Structure =", x$.corstruct_prt, " ")
   if (pmatch(xg$model$corstr, "independence", 0) == 0) {
     cat("  Link =", xg$model$cor.link, "\n")
     cat("Estimated Correlation Parameters:\n")

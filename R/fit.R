@@ -4,6 +4,8 @@ builders <- c("toeplitz", "banded-toeplitz", "banded-unstructured",
               "banded-exchangeable", "m-dependent", "nested-exchangeable",
               "pairwise-grouped-exchangeable", "block-exchangeable")
 other_structs <- "ar-m"
+banded <- c("banded-toeplitz", "banded-unstructured",
+            "banded-exchangeable")
 
 
 #
@@ -356,13 +358,6 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
     data <- dplyr::select(data, tidyselect::all_of(vars))
     data <- naa(data)
 
-#     upd_fm <- reformulate(c(".", encodeString(names(added_vars), quote = "`")),
-#                           quote(.))
-#     mf_formula <- update.formula(formula, upd_fm)
-# print(naa)
-#     print(rlang::new_formula(NULL, rlang::expr(. + !!idCol + !!wavesCol)))
-#     print(update.formula(formula, . ~ . + rlang::quo_get_expr(idCol))   )
-#     data <- na.action(data)
   }
 
 
@@ -433,7 +428,17 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
 
 
 
+  if (corstr %in% banded) {
+    corstr_prt <- paste0(corstr, ", bandwidth = ", bandwidth)
+  } else if (corstr == "m-dependent") {
+    corstr_prt <- paste0(corstr, ", mdep = ", mdep)
+  } else if (corstr == "ar-m") {
+    corstr_prt <- paste0(corstr, ", Mv = ", Mv)
+  } else corstr_prt <- corstr
+
   out$.corstruct <- corstr
+  out$.corstruct_prt <- corstr_prt
+
   out$call <- origcall
   out$waves <- waves_v
   out$.corparams <- list(bandwidth = bandwidth, mdep = mdep,

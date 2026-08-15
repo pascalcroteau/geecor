@@ -2,7 +2,7 @@
 summary.geecor <- function(object, ...)
 {
   value <- geepack:::summary.geeglm(object)
-  value$corstr <- object$.corstruct
+  value$corstr <- object$.corstruct_prt
   value$corr <- value$geese$correlation
   colnames(value$corr) <- c("Estimate", "san.se", "Wald", "Pr(>|W|)")
 
