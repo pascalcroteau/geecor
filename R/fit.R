@@ -1,4 +1,9 @@
 # DOCUMENTS PROBLEMS WITH ANOVA (USE CAR::ANOVA), DROP1/ADD1/STEP
+# GEEFIT DOIT ÊTRE MIS A JOUR POUR AR-M
+# DOCUMENT THAT NOT ALL OPTIONS (E.G., OFFSET) WORKS FOR AR-M <--- ATTENTION, PAS CERTAIN DE CETTE AFFIRMATION
+# VALIDER QUE LES FONCTIONS QUI NORMALEMENT GÈRENT LES VALEURS MANQUANATES
+#    FONCTIONNENT (e.g., predict avec na.exclude)
+
 
 builders <- c("toeplitz", "banded-toeplitz", "banded-unstructured",
               "banded-exchangeable", "m-dependent", "nested-exchangeable",
@@ -443,7 +448,7 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
   out$waves <- waves_v
   out$.corparams <- list(bandwidth = bandwidth, mdep = mdep,
                          subgroup = subgroup, block = block,
-                         individual = individual)
+                         individual = individual, Mv = Mv)
 
   class(out) <- c("geecor", class(out))
 
@@ -459,7 +464,8 @@ geecor_fit <- function(x, y, id, waves, family = gaussian,
                        weights, subset, na.action, start = NULL,
                        etastart, mustart, offset, control = geese.control(...),
                        contrasts = NULL, bandwidth = NULL, mdep = NULL,
-                       subgroup = NULL, block = NULL, individual = NULL, ...)
+                       subgroup = NULL, block = NULL, individual = NULL,
+                       Mv = NULL, ...)
 {
   corstr <- match.arg(corstr,
                       c(c("independence", "exchangeable", "ar1", "unstructured",
@@ -478,12 +484,30 @@ geecor_fit <- function(x, y, id, waves, family = gaussian,
 
   if (missing(offset)) offset <- rep(0, N)
   if (missing(weights)) weights <- rep(1, N)
+
+  if (is.character(family))
+    family <- get(family, mode = "function", envir = parent.frame())
+  if (is.function(family))
+    family <- family()
+
   if (family$family == "binomial") {
     if (is.matrix(y) && ncol(y) == 2) {
       weights <- apply(y, 1, sum)
       y <- y[, 1]/weights
     }
   }
+
+
+  if (corstr == "ar-m") {
+    return(
+      geecorfit_arm(x = x, y = y, id = id, waves = waves, family = family,
+                    weights = weights, start = start, etastart = etastart,
+                    mustart = mustart, offset = offset,
+                    control = control, contrasts = contrasts,
+                    Mv = Mv, max_iter = 50, tol = 1e-6)
+      )
+  }
+
 
 
   if (!corstr %in% c("independence", "exchangeable", "ar1", "unstructured",
