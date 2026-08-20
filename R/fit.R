@@ -3,6 +3,7 @@
 # DOCUMENT THAT NOT ALL OPTIONS (E.G., OFFSET) WORKS FOR AR-M <--- ATTENTION, PAS CERTAIN DE CETTE AFFIRMATION
 # VALIDER QUE LES FONCTIONS QUI NORMALEMENT GÈRENT LES VALEURS MANQUANATES
 #    FONCTIONNENT (e.g., predict avec na.exclude)
+#    ---> ADD TESTS FOR PREDICT AND RESID (NARESID)
 
 
 builders <- c("toeplitz", "banded-toeplitz", "banded-unstructured",
@@ -360,8 +361,14 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
       strict = FALSE
     )
     vars <- union(all.vars(formula), names(added_vars))
-    data <- dplyr::select(data, tidyselect::all_of(vars))
-    data <- naa(data)
+    fm_full <- as.formula(call("~",
+                               Reduce(function(e1, e2) call("+", e1, e2),
+                                      lapply(vars, as.name))
+                               )
+                          )
+    data <- model.frame(fm_full, data = data, na.action = na.action)
+    # data <- dplyr::select(data, tidyselect::all_of(vars))
+    # data <- na.action(data)
 
   }
 
@@ -441,6 +448,7 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
     corstr_prt <- paste0(corstr, ", Mv = ", Mv)
   } else corstr_prt <- corstr
 
+  out$na.action <- attr(data, "na.action")
   out$.corstruct <- corstr
   out$.corstruct_prt <- corstr_prt
 
