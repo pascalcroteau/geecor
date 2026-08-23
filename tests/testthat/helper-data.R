@@ -235,3 +235,51 @@ dat_li <- simulate_block_exch_li(n_clusters = 300)
 dat_li_na <- add_missing(dat_li)
 
 
+
+
+# ---------------------------------------------------------------------
+# ar-m, Mv=2: The answer must be close to 0.625 0.512 0.381 0.293 0.223
+#             The true ar coefs are 0.5 0.2
+# ---------------------------------------------------------------------
+
+
+true_phi_2 <- c(0.5, 0.2)
+true_rho1 <- true_phi_2[1] / (1 - true_phi_2[2])
+true_rho2 <- true_phi_2[1] * true_rho1 + true_phi_2[2]
+true_rho_2 <- extend_ar_corr(true_phi_2, c(true_rho1, true_rho2), maxwave = 6)
+
+
+Sigma_ar2 <- toeplitz(c(1, true_rho_2))
+
+dat_ar2 <- simulate_from_sigma(n_clusters = 500, Sigma = Sigma_ar2,
+                               prop_missing = 0.15)
+dat_ar2_na <- add_missing(dat_ar2)
+
+
+
+# ---------------------------------------------------------------------
+# ar-m, Mv=3: The answer must be close to 0.560 0.480 0.404 0.314 0.254
+#             The true ar coefs are 0.4 0.2 0.1
+# ---------------------------------------------------------------------
+
+
+true_phi_3 <- c(0.4, 0.2, 0.1)
+
+
+true_rho1_3 <- 0.56
+true_rho2_3 <- 0.48
+true_rho3_3 <- 0.404
+true_rho_3 <- extend_ar_corr(true_phi_3,
+                             c(true_rho1_3, true_rho2_3, true_rho3_3),
+                             maxwave = 6)
+
+Sigma_ar3 <- toeplitz(c(1, true_rho_3))
+
+dat_ar3 <- simulate_from_sigma(n_clusters = 600, Sigma = Sigma_ar3,
+                               prop_missing = 0.15)
+dat_ar3_na <- add_missing(dat_ar3)
+
+
+
+
+

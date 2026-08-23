@@ -79,6 +79,12 @@ test_that(
                        mdep = 3)
 
 
+    # geefit(wheeze ~ city*smoke + age, id = case, data = six,
+    #        waves = age, family = binomial, corstr = "ar-m",
+    #        Mv = 2)
+    # anova()
+
+
     expect_equal(aov1["city", ]$X2,
                  summary(citystats)$coefficients["citykingston", ]$Wald)
     expect_equal(aov1["city", ]$`P(>|Chi|)`,

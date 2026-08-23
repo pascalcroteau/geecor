@@ -255,5 +255,57 @@ test_that(
 
     expect_identical(coef(fit_manual_li), coef(fit_geefit_li))
     expect_identical(fit_manual_li$geese$alpha, fit_geefit_li$geese$alpha)
+
+
+
+
+    # ---------------------------------------------------------------------
+    # ar-m, Mv=2: The answer must be close to 0.625 0.512 0.381 0.293 0.223
+    #             The true ar coefs are 0.5 0.2
+    # ---------------------------------------------------------------------
+
+
+
+    dat_ar2_clean <- dat_ar2_na[complete.cases(dat_ar2_na), ]
+    dat_ar2_clean <- dat_ar2_clean[order(dat_ar2_clean$id,
+                                       dat_ar2_clean$waves), ]
+
+
+    fit_manual_ar2 <- geeglm_arm(y ~ 1, id = id, waves = waves,
+                                 data = dat_ar2_clean,
+                                 family = gaussian, Mv = 2)
+    fit_geefit_ar2 <- geefit(y ~ 1, id = id, waves = waves,
+                             data = dat_ar2_na,
+                             family = gaussian, Mv = 2,
+                             corstr = "ar-m")
+
+    expect_identical(coef(fit_manual_ar2), coef(fit_geefit_ar2))
+    expect_identical(fit_manual_ar2$geese$alpha, fit_geefit_ar2$geese$alpha)
+
+
+
+
+    # ---------------------------------------------------------------------
+    # ar-m, Mv=3: The answer must be close to 0.560 0.480 0.404 0.314 0.254
+    #             The true ar coefs are 0.4 0.2 0.1
+    # ---------------------------------------------------------------------
+
+
+
+    dat_ar3_clean <- dat_ar3_na[complete.cases(dat_ar3_na), ]
+    dat_ar3_clean <- dat_ar3_clean[order(dat_ar3_clean$id,
+                                         dat_ar3_clean$waves), ]
+
+
+    fit_manual_ar3 <- geeglm_arm(y ~ 1, id = id, waves = waves,
+                                 data = dat_ar3_clean,
+                                 family = gaussian, Mv = 3)
+    fit_geefit_ar3 <- geefit(y ~ 1, id = id, waves = waves,
+                             data = dat_ar3_na,
+                             family = gaussian, Mv = 3,
+                             corstr = "ar-m")
+
+    expect_identical(coef(fit_manual_ar3), coef(fit_geefit_ar3))
+    expect_identical(fit_manual_ar3$geese$alpha, fit_geefit_ar3$geese$alpha)
   })
 

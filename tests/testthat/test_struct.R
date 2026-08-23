@@ -184,4 +184,29 @@ test_that(
 
 
 
+    # ---------------------------------------------------------------------
+    # ar-m, Mv=2: The answer must be close to 0.625 0.512 0.381 0.293 0.223
+    #             The true ar coefs are 0.5 0.2
+    # ---------------------------------------------------------------------
+
+    expect_snapshot(
+      geefit(y ~ 1, id = id, waves = waves, data = dat_ar2,
+             family = gaussian, Mv = 2, corstr = "ar-m")
+    )
+
+
+
+    # ---------------------------------------------------------------------
+    # ar-m, Mv=3: The answer must be close to 0.560 0.480 0.404 0.314 0.254
+    #             The true ar coefs are 0.4 0.2 0.1
+    # ---------------------------------------------------------------------
+
+
+    expect_snapshot(
+      geefit(y ~ 1, id = id, waves = waves, data = dat_ar3,
+             family = gaussian, Mv = 3, corstr = "ar-m")
+    )
+
+
+
   })

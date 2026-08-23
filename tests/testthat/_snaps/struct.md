@@ -18,7 +18,7 @@
       Scale Link:                   identity
       Estimated Scale Parameters:  [1] 1.082758
       
-      Correlation:  Structure = banded-toeplitz    Link = identity 
+      Correlation:  Structure = banded-toeplitz, bandwidth = 2    Link = identity 
       Estimated Correlation Parameters:
         alpha:1   alpha:2 
       0.5116232 0.3084207 
@@ -46,7 +46,7 @@
       Scale Link:                   identity
       Estimated Scale Parameters:  [1] 0.9896692
       
-      Correlation:  Structure = banded-unstructured    Link = identity 
+      Correlation:  Structure = banded-unstructured, bandwidth = 2    Link = identity 
       Estimated Correlation Parameters:
        pair_1_2  pair_1_3  pair_2_3  pair_2_4  pair_3_4  pair_3_5  pair_4_5 
       0.5168216 0.3184708 0.4306707 0.2524204 0.3733138 0.2006915 0.3441165 
@@ -74,7 +74,7 @@
       Scale Link:                   identity
       Estimated Scale Parameters:  [1] 1.079079
       
-      Correlation:  Structure = banded-exchangeable    Link = identity 
+      Correlation:  Structure = banded-exchangeable, bandwidth = 2    Link = identity 
       Estimated Correlation Parameters:
         alpha:1 
       0.4103338 
@@ -103,7 +103,7 @@
       Scale Link:                   identity
       Estimated Scale Parameters:  [1] 1.017311
       
-      Correlation:  Structure = m-dependent    Link = identity 
+      Correlation:  Structure = m-dependent, mdep = 1    Link = identity 
       Estimated Correlation Parameters:
         alpha:1 
       0.3995063 
@@ -194,5 +194,61 @@
       0.3181522 0.1696427 0.2511806 
       
       Number of clusters:   300   Maximum cluster size: 9 
+      
+
+---
+
+    Code
+      geefit(y ~ 1, id = id, waves = waves, data = dat_ar2, family = gaussian, Mv = 2,
+      corstr = "ar-m")
+    Output
+      
+      Call:
+      geefit(formula = y ~ 1, data = dat_ar2, id = id, waves = waves, 
+          family = gaussian, corstr = "ar-m", Mv = 2)
+      
+      Coefficients:
+      (Intercept) 
+       0.02296667 
+      
+      Degrees of Freedom: 2598 Total (i.e. Null);  2597 Residual
+      
+      Scale Link:                   identity
+      Estimated Scale Parameters:  [1] 1.063447
+      
+      Correlation:  Structure = ar-m, Mv = 2    Link = identity 
+      Estimated Correlation Parameters:
+        alpha:1   alpha:2   alpha:3   alpha:4   alpha:5 
+      0.6269109 0.5257951 0.3946577 0.3083110 0.2373342 
+      
+      Number of clusters:   500   Maximum cluster size: 6 
+      
+
+---
+
+    Code
+      geefit(y ~ 1, id = id, waves = waves, data = dat_ar3, family = gaussian, Mv = 3,
+      corstr = "ar-m")
+    Output
+      
+      Call:
+      geefit(formula = y ~ 1, data = dat_ar3, id = id, waves = waves, 
+          family = gaussian, corstr = "ar-m", Mv = 3)
+      
+      Coefficients:
+      (Intercept) 
+      0.004927995 
+      
+      Degrees of Freedom: 3117 Total (i.e. Null);  3116 Residual
+      
+      Scale Link:                   identity
+      Estimated Scale Parameters:  [1] 1.056486
+      
+      Correlation:  Structure = ar-m, Mv = 3    Link = identity 
+      Estimated Correlation Parameters:
+        alpha:1   alpha:2   alpha:3   alpha:4   alpha:5 
+      0.5690131 0.5013947 0.3999110 0.3156316 0.2534309 
+      
+      Number of clusters:   600   Maximum cluster size: 6 
       
 
