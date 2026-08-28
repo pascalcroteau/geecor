@@ -379,13 +379,21 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
   if (corstr %in% c("independence", "exchangeable", "ar1", "unstructured",
                     "fixed", "userdefined")) {
 
-    return(
-      eval(
-        rlang::call_modify(cl, data = quote(data), waves = NULL),
-        envir = list(data = data),
-        enclos = parent.frame()
-      )
+    out <- eval(
+      rlang::call_modify(cl, data = quote(data), waves = NULL),
+      envir = list(data = data),
+      enclos = parent.frame()
     )
+    out$na.action <- attr(data, "na.action")
+    return(out)
+
+    # return(
+    #   eval(
+    #     rlang::call_modify(cl, data = quote(data), waves = NULL),
+    #     envir = list(data = data),
+    #     enclos = parent.frame()
+    #   )
+    # )
   }
 
 
