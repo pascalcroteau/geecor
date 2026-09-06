@@ -23,6 +23,9 @@ print.geecor <- function(x, digits = NULL, quote = FALSE, prefix = "", ...)
     cat("Estimated Correlation Parameters:\n")
     print(unclass(xg$alpha), digits = digits)
   }
+  cat("\nWorking correlation:\n")
+  print(noquote(formatC(x$corr, format = "f", digits = 3)))
+
   cat("\nNumber of clusters:  ", length(xg$clusz), "  Maximum cluster size:",
       max(xg$clusz), "\n\n")
   invisible(x)

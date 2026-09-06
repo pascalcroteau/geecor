@@ -19,6 +19,7 @@ banded <- c("banded-toeplitz", "banded-unstructured",
 # waves mandatory|  auto sort
 
 
+
 #' Fit GEE Models with Extended Working Correlation Structures
 #'
 #' @description
@@ -387,13 +388,6 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
     out$na.action <- attr(data, "na.action")
     return(out)
 
-    # return(
-    #   eval(
-    #     rlang::call_modify(cl, data = quote(data), waves = NULL),
-    #     envir = list(data = data),
-    #     enclos = parent.frame()
-    #   )
-    # )
   }
 
 
@@ -459,6 +453,19 @@ geefit <- function(formula, data, id, waves = NULL, family = gaussian,
   out$na.action <- attr(data, "na.action")
   out$.corstruct <- corstr
   out$.corstruct_prt <- corstr_prt
+  out$corr <- build_corr_matrix(corstr = if (corstr == "m-dependent") "banded-toeplitz" else corstr,
+                                alpha = out$geese$alpha,
+                                maxwave = length(unique(waves_v)),
+                                bandwidth = if (corstr == "m-dependent") mdep else bandwidth,
+                                subgroup = subgroup,
+                                block = block,
+                                n_individual = if (is.null(individual)) {
+                                  NULL
+                                } else {
+                                  length(unique(individual))
+                                } ,
+                                n_period = length(unique(waves_v)),
+                                Mv = Mv)
 
   out$call <- origcall
   out$waves <- waves_v
